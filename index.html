@@ -8362,6 +8362,7 @@ function resetData() {
 const QUIZ_STORAGE_KEY = 'repair_db_v3_quiz_session';
 const QUIZ_DATA_KEY = 'repair_db_v3_quiz_data';   // 试卷题目内容（编辑保存到这）
 const QUIZ_SUBMISSIONS_KEY = 'repair_db_v3_quiz_submissions';  // 候选人提交记录
+const CLOUD_SYNC_URL = 'https://script.google.com/a/macros/mistermobile.com.sg/s/AKfycbwpwIdYSHy5H7VgKS0hmdkFRlpugEo3VQmLjf7xL2pE9elYQxs9p_vah1hLSErDJ_te/exec';
 const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 let QUIZ_DATA = null;  // 运行时试卷数据（可能被编辑过）
@@ -8390,7 +8391,23 @@ function appendSubmission(sub) {
   const arr = loadSubmissions();
   arr.push(sub);
   saveSubmissions(arr);
+  syncToCloud(sub);
   return arr;
+}
+
+function syncToCloud(sub) {
+  try {
+    fetch(CLOUD_SYNC_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(sub)
+    }).catch(function(err) {
+      console.warn('云端同步失败（不影响本地保存）:', err);
+    });
+  } catch(e) {
+    console.warn('云端同步异常:', e);
+  }
 }
 
 function deleteSubmission(id) {
